@@ -190,7 +190,7 @@
         <div class="brand">🚎 Control Transmetro</div>
         <div class="meta">
             <span>📍 Estación:
-                <select id="sel-estacion" class="select-header" onchange="actualizarParametrosEstacion()">
+                <select id="sel-estacion" class="select-header" onchange="onCambioEstacion()">
                     <option value="Centra Sur" data-cap="160">Centra Sur (160 pax)</option>
                     <option value="El Trébol" data-cap="200">El Trébol (200 pax)</option>
                     <option value="Plaza Barrios" data-cap="180">Plaza Barrios (180 pax)</option>
@@ -209,7 +209,7 @@
             </span>
 
             <a href="/" class="btn-nav">Dashboard</a>
-            <a href="/" class="btn-nav btn-cta">⚙️ Gestión y Rutas</a>
+            <a href="/gestion" class="btn-nav btn-cta">⚙️ Gestión y Rutas</a>
         </div>
     </nav>
 
@@ -278,7 +278,7 @@
                     <p id="retencion-desc">Por regla de negocio, al arribar con menos del 25% de capacidad, el bus debe esperar en bahía para recibir transbordo.</p>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.85rem; color: #854d0e; font-weight: bold;">Tiempo Restante:</span>
-                        <div class="timer-display" id="timer">03:15</div>
+                        <div class="timer-display" id="timer">05:00</div>
                     </div>
                 </div>
 
@@ -288,6 +288,51 @@
     </div>
 
     <script>
+        let rutasBD = [];
+        let tiempoRestante = 300;
+        let intervalo = null;
+
+        const timerElem = document.getElementById('timer');
+        const btnSalida = document.getElementById('btn-salida');
+        const boxRetencion = document.getElementById('box-retencion');
+        const retencionTitulo = document.getElementById('retencion-titulo');
+        const retencionDesc = document.getElementById('retencion-desc');
+        const busOcupacion = document.getElementById('bus-ocupacion');
+        const btnActualizar = document.getElementById('btn-actualizar');
+        const inputPasajeros = document.getElementById('txt-pasajeros');
+        const banner = document.getElementById('banner-alerta');
+        const bannerPax = document.getElementById('banner-pax');
+        const listaLecturas = document.getElementById('lista-lecturas');
+
+        // 1. Cargar las rutas desde la base de datos para sincronizar los minutos del CRUD
+        async function cargarRutasDesdeBD() {
+            try {
+                const res = await fetch('/api/rutas');
+                if (res.ok) {
+                    rutasBD = await res.json();
+                }
+            } catch (err) {
+                console.error("Error al obtener rutas de la base de datos:", err);
+            }
+        }
+
+        // Obtiene el tiempo de espera real configurado en el CRUD
+        function obtenerMinutosRutaActual() {
+            const selEst = document.getElementById('sel-estacion').value;
+            
+            // Busca coincidencia por nombre de estación o asigna la ruta principal
+            let ruta = rutasBD.find(r => 
+                (r.origen && r.origen.toLowerCase().includes(selEst.toLowerCase())) ||
+                (r.destino && r.destino.toLowerCase().includes(selEst.toLowerCase())) ||
+                (r.nombre && r.nombre.includes("12") && (selEst === "Centra Sur" || selEst === "El Trébol"))
+            );
+
+            if (ruta && ruta.tiempo_espera) {
+                return parseInt(ruta.tiempo_espera);
+            }
+            return 5; // Valor estándar de 5 minutos si no hay ruta registrada
+        }
+
         function actualizarParametrosEstacion() {
             const sel = document.getElementById('sel-estacion');
             const cap = parseInt(sel.options[sel.selectedIndex].getAttribute('data-cap')) || 160;
@@ -297,11 +342,10 @@
             document.getElementById('lbl-umbral').innerText = `${umbral} pasajeros`;
         }
 
-        const btnActualizar = document.getElementById('btn-actualizar');
-        const inputPasajeros = document.getElementById('txt-pasajeros');
-        const banner = document.getElementById('banner-alerta');
-        const bannerPax = document.getElementById('banner-pax');
-        const listaLecturas = document.getElementById('lista-lecturas');
+        function onCambioEstacion() {
+            actualizarParametrosEstacion();
+            cambiarBusPlataforma();
+        }
 
         btnActualizar.addEventListener('click', async () => {
             const pax = parseInt(inputPasajeros.value) || 0;
@@ -342,18 +386,14 @@
             }
         });
 
-        let tiempoRestante = 195;
-        let intervalo = null;
-        const timerElem = document.getElementById('timer');
-        const btnSalida = document.getElementById('btn-salida');
-        const boxRetencion = document.getElementById('box-retencion');
-        const retencionTitulo = document.getElementById('retencion-titulo');
-        const retencionDesc = document.getElementById('retencion-desc');
-        const busOcupacion = document.getElementById('bus-ocupacion');
-
         function iniciarTemporizador(segundos) {
             if (intervalo) clearInterval(intervalo);
             tiempoRestante = segundos;
+
+            // Renderizar inmediatamente el tiempo inicial (ej. 08:00)
+            const minInit = String(Math.floor(tiempoRestante / 60)).padStart(2, '0');
+            const segInit = String(tiempoRestante % 60).padStart(2, '0');
+            timerElem.innerText = `${minInit}:${segInit}`;
             
             intervalo = setInterval(() => {
                 if (tiempoRestante <= 0) {
@@ -387,12 +427,16 @@
                 boxRetencion.style.borderColor = "#fde047";
                 retencionTitulo.style.color = "#854d0e";
                 retencionTitulo.innerText = "🕒 RETENCIÓN OBLIGATORIA ACTIVA (< 25%)";
+
+                const minutosReales = obtenerMinutosRutaActual();
                 retencionDesc.style.color = "#854d0e";
-                retencionDesc.innerText = `Ocupación insuficiente (${pct}%). El bus debe esperar en bahía para recibir transbordo.`;
+                retencionDesc.innerText = `Ocupación insuficiente (${pct}%). Tiempo regulado en CCO para esta línea: ${minutosReales} minutos.`;
+
                 btnSalida.className = "btn-salida";
                 btnSalida.innerText = "🔒 Salida Bloqueada (Esperando fin de temporizador)";
                 btnSalida.disabled = true;
-                iniciarTemporizador(180);
+
+                iniciarTemporizador(minutosReales * 60);
             } else {
                 if (intervalo) clearInterval(intervalo);
                 busOcupacion.style.color = "#0e9f6e";
@@ -410,7 +454,8 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            await cargarRutasDesdeBD();
             actualizarParametrosEstacion();
             cambiarBusPlataforma();
         });
