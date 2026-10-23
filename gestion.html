@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Operativa - Transmetro</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: #f4f7f6; color: #333; }
+        .navbar { background-color: #1a2a40; color: #fff; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar .brand { font-size: 1.2rem; font-weight: bold; }
+        .navbar a { color: #fff; text-decoration: none; margin-left: 15px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.4); padding: 5px 12px; border-radius: 4px; }
+        .navbar a:hover { background: rgba(255,255,255,0.1); }
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 15px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .card h2 { margin-top: 0; font-size: 1.15rem; color: #1a2a40; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.82rem; color: #555; margin-bottom: 4px; font-weight: 600; }
+        .form-group input { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none; }
+        .btn-guardar { width: 100%; background: #142850; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; }
+        .btn-guardar:hover { background: #0c1830; }
+        .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85rem; }
+        .tabla-resumen th, .tabla-resumen td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .tabla-resumen th { background: #f8fafc; color: #475569; }
+        .badge-tiempo { background: #e0e7ff; color: #3730a3; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="brand">🚎 Control Transmetro | Gestión y Catálogos</div>
+        <div>
+            <a href="/">Dashboard</a>
+            <a href="/terminal.html">Terminal Estación</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="grid-3">
+            <!-- 1. PILOTOS -->
+            <div class="card">
+                <h2>👨‍✈️ Registrar Piloto</h2>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="piloto-nombre" placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label>DPI</label>
+                    <input type="text" id="piloto-dpi" placeholder="Ej: 2450123450101">
+                </div>
+                <div class="form-group">
+                    <label>Código de Empleado</label>
+                    <input type="text" id="piloto-codigo" placeholder="Ej: PIL-089">
+                </div>
+                <button class="btn-guardar" onclick="guardarPiloto()">+ Guardar Piloto</button>
+
+                <table class="tabla-resumen">
+                    <thead><tr><th>Código</th><th>Nombre</th></tr></thead>
+                    <tbody id="tbl-pilotos">
+                        {% for p in pilotos %}
+                        <tr><td><strong>{{ p.codigo }}</strong></td><td>{{ p.nombre }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2. ESTACIONES -->
+            <div class="card">
+                <h2>🏢 Registrar Estación</h2>
+                <div class="form-group">
+                    <label>Nombre de la Estación</label>
+                    <input type="text" id="est-nombre" placeholder="Ej: Estación Tipografía">
+                </div>
+                <div class="form-group">
+                    <label>Capacidad Nominal (pasajeros)</label>
+                    <input type="number" id="est-capacidad" placeholder="Ej: 160">
+                </div>
+                <button class="btn-guardar" onclick="guardarEstacion()">+ Guardar Estación</button>
+
+                <table class="tabla-resumen">
+                    <thead><tr><th>Estación</th><th>Capacidad</th></tr></thead>
+                    <tbody id="tbl-estaciones">
+                        {% for e in estaciones %}
+                        <tr><td>{{ e.nombre }}</td><td><strong>{{ e.capacidad }} pax</strong></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 3. RUTAS Y TIEMPO DE ESPERA -->
+            <div class="card">
+                <h2>🗺️ Ruta y Tiempo de Espera</h2>
+                <div class="form-group">
+                    <label>Nombre de Ruta</label>
+                    <input type="text" id="ruta-nombre" placeholder="Ej: Línea 1 (Centro Histórico)">
+                </div>
+                <div class="form-group">
+                    <label>Estación Origen</label>
+                    <input type="text" id="ruta-origen" placeholder="Ej: San Sebastián">
+                </div>
+                <div class="form-group">
+                    <label>Estación Destino</label>
+                    <input type="text" id="ruta-destino" placeholder="Ej: San Antonio">
+                </div>
+                <div class="form-group">
+                    <label>Tiempo de Espera en Bahía (minutos)</label>
+                    <input type="number" id="ruta-tiempo" placeholder="Ej: 5">
+                </div>
+                <button class="btn-guardar" onclick="guardarRuta()">+ Configurar Ruta</button>
+
+                <table class="tabla-resumen">
+                    <thead><tr><th>Ruta</th><th>Espera</th></tr></thead>
+                    <tbody id="tbl-rutas">
+                        {% for r in rutas %}
+                        <tr>
+                            <td>{{ r.nombre }}<br><small style="color:#64748b;">{{ r.origen }} ➔ {{ r.destino }}</small></td>
+                            <td><span class="badge-tiempo">{{ r.tiempo_espera }} min</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function guardarPiloto() {
+            const nombre = document.getElementById('piloto-nombre').value;
+            const dpi = document.getElementById('piloto-dpi').value;
+            const codigo = document.getElementById('piloto-codigo').value;
+            if(!nombre || !codigo) return alert('Completa nombre y código');
+            await fetch('/api/pilotos', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre, dpi, codigo })
+            });
+            location.reload();
+        }
+
+        async function guardarEstacion() {
+            const nombre = document.getElementById('est-nombre').value;
+            const capacidad = document.getElementById('est-capacidad').value;
+            if(!nombre || !capacidad) return alert('Completa nombre y capacidad');
+            await fetch('/api/estaciones', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre, capacidad })
+            });
+            location.reload();
+        }
+
+        async function guardarRuta() {
+            const nombre_ruta = document.getElementById('ruta-nombre').value;
+            const origen = document.getElementById('ruta-origen').value;
+            const destino = document.getElementById('ruta-destino').value;
+            const tiempo_espera = document.getElementById('ruta-tiempo').value;
+            if(!nombre_ruta || !tiempo_espera) return alert('Completa ruta y tiempo');
+            await fetch('/api/rutas', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre_ruta, origen, destino, tiempo_espera })
+            });
+            location.reload();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transmetro - Inicio de Sesión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --tm-navy: #102C57; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .login-card { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body class="d-flex align-items-center min-vh-100 py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card login-card p-4">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex p-3 rounded-circle text-white mb-2" style="background-color: var(--tm-navy);">
+                            <i class="bi bi-bus-front fs-2"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mt-2 mb-0">Sistema Transmetro</h4>
+                        <span class="text-muted small">Terminal de Estaciones y Despacho</span>
+                    </div>
+
+                    <form action="terminal.html" method="GET">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Usuario / Operador</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" value="cgomez_sur" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                <input type="password" class="form-control" value="************" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Estación Asignada</label>
+                            <select class="form-select">
+                                <option selected>Estación Centra Sur (192.168.10.25)</option>
+                                <option>Estación El Trébol (192.168.10.30)</option>
+                                <option>Estación Plaza Barrios (192.168.10.45)</option>
+                            </select>
+                        </div>
+
+                        <div class="p-2 mb-3 rounded bg-light border d-flex align-items-center">
+                            <i class="bi bi-shield-check text-success fs-5 me-2"></i>
+                            <span class="small text-muted">Enlace VPN WireGuard Activo</span>
+                        </div>
+
+                        <button type="submit" class="btn text-white w-100 py-2 fw-bold" style="background-color: var(--tm-navy);">
+                            Ingresar a la Terminal
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

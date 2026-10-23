@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transmetro - Reportería de Flota</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --tm-navy: #102C57; }
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', sans-serif; }
+        .card-custom { border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark px-4" style="background-color: var(--tm-navy);">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+            <i class="bi bi-bus-front-fill me-2 text-warning"></i> Control Transmetro
+        </a>
+        <div class="navbar-nav ms-auto gap-2">
+            <a class="nav-link" href="index.html">Dashboard</a>
+            <a class="nav-link" href="terminal.html">Terminal Estación</a>
+            <a class="nav-link active fw-bold" href="reportes.html">Reportería Flota</a>
+            <a class="nav-link text-danger" href="login.html"><i class="bi bi-box-arrow-right"></i> Salir</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-file-earmark-text text-primary"></i> Consulta de Buses Asignados por Línea</h5>
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold">Seleccionar Línea</label>
+                    <select class="form-select">
+                        <option selected>Línea 12 - Eje Sur (Total: 10.70 km)</option>
+                        <option>Línea 01 - Centro Histórico</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold">Patio / Parqueo</label>
+                    <select class="form-select">
+                        <option selected>Patio Central Sur</option>
+                        <option>Patio El Trébol</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100 fw-bold" style="background-color: var(--tm-navy);"><i class="bi bi-filter"></i> Filtrar</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-dark" style="background-color: var(--tm-navy);">
+                        <tr>
+                            <th>Unidad</th>
+                            <th>Placa</th>
+                            <th>Capacidad</th>
+                            <th>Piloto Asignado</th>
+                            <th>Nivel Educativo</th>
+                            <th>Parqueo Base</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>TM-042</strong></td>
+                            <td>TR-1020</td>
+                            <td>160 pax</td>
+                            <td>Carlos Gómez</td>
+                            <td>Diversificado Completo</td>
+                            <td>Patio Central Sur</td>
+                            <td><span class="badge bg-success">En Ruta (L12)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>TM-043</strong></td>
+                            <td>TR-1021</td>
+                            <td>160 pax</td>
+                            <td>Juan Morales</td>
+                            <td>Técnico Mecánico</td>
+                            <td>Patio Central Sur</td>
+                            <td><span class="badge bg-success">En Ruta (L12)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>TM-044</strong></td>
+                            <td>TR-1022</td>
+                            <td>120 pax</td>
+                            <td>Mario Paredes</td>
+                            <td>Diversificado Completo</td>
+                            <td>Patio Central Sur</td>
+                            <td><span class="badge bg-info text-dark">Reserva en Patio</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-info mt-3 mb-0 small">
+                <i class="bi bi-info-circle-fill me-1"></i>
+                <strong>Validación de Regla de Flota:</strong> La Línea 12 tiene 3 estaciones y 3 unidades asignadas, cumpliendo la condición $E \le B \le 2E$ ($3 \le 3 \le 6$).
+            </div>
+        </div>
+    </div>
+</body>
+</html>

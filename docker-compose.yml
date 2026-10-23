@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  transmetro-cco:
+    build: .
+    container_name: transmetro_cco_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - FLASK_ENV=production
+      - DB_USER=SYSTEM
+      - DB_PASSWORD=oracle
+      - DB_HOST=localhost
+      - DB_PORT=1521
+      - DB_SERVICE=xe

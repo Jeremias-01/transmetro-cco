@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Estación - Control Transmetro</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: #f4f7f6; color: #333; }
+        
+        .navbar {
+            background-color: #1a2a40;
+            color: #fff;
+            padding: 10px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .brand { font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .navbar .meta { font-size: 0.9rem; display: flex; align-items: center; gap: 15px; }
+
+        /* Estilo para los Selectores de la Barra */
+        .select-header {
+            background-color: #243b55;
+            color: #fff;
+            border: 1px solid #3b597a;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .select-header option { background-color: #1a2a40; color: #fff; }
+
+        .btn-nav {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .btn-nav:hover { background-color: rgba(255,255,255,0.1); }
+        .btn-cta {
+            background-color: #2563eb;
+            color: #fff;
+            border: 1px solid #3b82f6;
+            font-weight: 600;
+        }
+        .btn-cta:hover { background-color: #1d4ed8; }
+
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+
+        #banner-alerta {
+            display: none;
+            background-color: #fde8e8;
+            border-left: 5px solid #e02424;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .alerta-texto h3 { margin: 0 0 5px 0; color: #9b1c1c; font-size: 1.05rem; }
+        .alerta-texto p { margin: 0; color: #9b1c1c; font-size: 0.9rem; }
+        .badge-despacho {
+            background-color: #e02424;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .grid-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 22px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .card h2 { margin-top: 0; font-size: 1.15rem; color: #1a2a40; margin-bottom: 18px; }
+
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; }
+        .form-group label { display: block; font-size: 0.82rem; color: #666; margin-bottom: 5px; }
+        .form-control-static {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .input-action-group { display: flex; margin-bottom: 20px; }
+        .input-action-group input {
+            flex: 1;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px 0 0 6px;
+            outline: none;
+            color: #1a2a40;
+        }
+        .input-action-group input:focus { border-color: #1a2a40; }
+        .btn-update {
+            background-color: #142850;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-update:hover { background-color: #0c1830; }
+
+        .lecturas-titulo { font-size: 0.85rem; color: #666; margin-bottom: 10px; }
+        .lectura-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+            background: #fafafa;
+            border: 1px solid #edf2f7;
+        }
+        .lectura-item.normal { border-left: 4px solid #0e9f6e; }
+        .lectura-item.sobredemanda { border-left: 4px solid #e02424; background: #fff5f5; }
+
+        .tag-pax {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: white;
+        }
+        .tag-pax.green { background-color: #0e9f6e; }
+        .tag-pax.red { background-color: #e02424; }
+
+        .box-retencion {
+            background-color: #fef9c3;
+            border: 1px solid #fde047;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .box-retencion h4 { margin: 0 0 6px 0; color: #854d0e; font-size: 0.95rem; }
+        .box-retencion p { margin: 0 0 12px 0; color: #854d0e; font-size: 0.82rem; }
+        
+        .timer-display {
+            background-color: #1e293b;
+            color: #38bdf8;
+            font-family: monospace;
+            font-size: 1.8rem;
+            padding: 6px 14px;
+            border-radius: 6px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .btn-salida {
+            width: 100%;
+            margin-top: 18px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: not-allowed;
+            background-color: #94a3b8;
+            color: white;
+        }
+        .btn-salida.autorizado {
+            background-color: #0e9f6e;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">🚎 Control Transmetro</div>
+        <div class="meta">
+            <!-- Selector interactivo de Estación -->
+            <span>📍 Estación:
+                <select id="sel-estacion" class="select-header" onchange="actualizarParametrosEstacion()">
+                    <option value="Centra Sur" data-cap="160">Centra Sur (160 pax)</option>
+                    <option value="El Trébol" data-cap="200">El Trébol (200 pax)</option>
+                    <option value="Plaza Barrios" data-cap="180">Plaza Barrios (180 pax)</option>
+                    <option value="San Sebastián" data-cap="120">San Sebastián (120 pax)</option>
+                    <option value="Roosevelt" data-cap="170">Roosevelt (170 pax)</option>
+                </select>
+            </span>
+
+            <!-- Selector interactivo de Operador -->
+            <span>👤 Operador:
+                <select id="sel-operador" class="select-header">
+                    <option value="Carlos Gómez">Carlos Gómez (Turno Matutino)</option>
+                    <option value="Marta Hernández">Marta Hernández (Turno Vespertino)</option>
+                    <option value="Luis Morales">Luis Morales (Turno Central)</option>
+                    <option value="Baltazar Rodríguez">Baltazar Rodríguez (Supervisor CCO)</option>
+                </select>
+            </span>
+
+            <a href="/" class="btn-nav">Dashboard</a>
+            <a href="/gestion.html" class="btn-nav btn-cta">⚙️ Gestión y Rutas</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Banner de Alerta Crítica -->
+        <div id="banner-alerta">
+            <div class="alerta-texto">
+                <h3>⚠️ ¡ALERTA CRÍTICA: SOBREDEMANDA (≥ 50%)!</h3>
+                <p id="banner-desc">Aforo actual: <strong id="banner-pax">260 pasajeros</strong> en andén. Notificado a Central para despacho de refuerzo.</p>
+            </div>
+            <div class="badge-despacho">DESPACHO SOLICITADO</div>
+        </div>
+
+        <div class="grid-panels">
+            <!-- Panel 1: Aforo -->
+            <div class="card">
+                <h2>👥 1. Registro de Aforo en Estación</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Capacidad Nominal</label>
+                        <div class="form-control-static" id="lbl-capacidad">160 pasajeros</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Umbral Alerta (+50%)</label>
+                        <div class="form-control-static" id="lbl-umbral" style="color: #e02424;">240 pasajeros</div>
+                    </div>
+                </div>
+
+                <label style="font-size: 0.85rem; color: #444; font-weight: bold;">Pasajeros en Andén</label>
+                <div class="input-action-group">
+                    <input type="number" id="txt-pasajeros" value="10" min="0">
+                    <button class="btn-update" id="btn-actualizar" type="button">Actualizar</button>
+                </div>
+
+                <div class="lecturas-titulo">Últimas lecturas registradas:</div>
+                <div id="lista-lecturas">
+                    <div class="lectura-item normal">
+                        <span>08:34 hrs - Aforo normal</span>
+                        <span class="tag-pax green">10 pax</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Despacho de Bus -->
+            <div class="card">
+                <h2>⏱️ 2. Despacho de Unidad en Bahía</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Unidad en Plataforma</label>
+                        <div class="form-control-static">Bus TM-042 (Articulado)</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ocupación a Bordo</label>
+                        <div class="form-control-static" id="bus-ocupacion" style="color: #d97706;">30 pax (18.7%)</div>
+                    </div>
+                </div>
+
+                <div class="box-retencion" id="box-retencion">
+                    <h4>🕒 RETENCIÓN OBLIGATORIA ACTIVA (&lt; 25%)</h4>
+                    <p>Por regla de negocio, al arribar con menos del 25% de capacidad, el bus debe esperar 5 minutos para recibir transbordo.</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.85rem; color: #854d0e; font-weight: bold;">Tiempo Restante:</span>
+                        <div class="timer-display" id="timer">03:15</div>
+                    </div>
+                </div>
+
+                <button class="btn-salida" id="btn-salida" disabled>🔒 Salida Bloqueada (Esperando fin de temporizador)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Actualizar parámetros según la estación seleccionada
+        function actualizarParametrosEstacion() {
+            const sel = document.getElementById('sel-estacion');
+            const cap = parseInt(sel.options[sel.selectedIndex].getAttribute('data-cap')) || 160;
+            const umbral = Math.round(cap * 1.50);
+
+            document.getElementById('lbl-capacidad').innerText = `${cap} pasajeros`;
+            document.getElementById('lbl-umbral').innerText = `${umbral} pasajeros`;
+        }
+
+        const btnActualizar = document.getElementById('btn-actualizar');
+        const inputPasajeros = document.getElementById('txt-pasajeros');
+        const banner = document.getElementById('banner-alerta');
+        const bannerPax = document.getElementById('banner-pax');
+        const listaLecturas = document.getElementById('lista-lecturas');
+
+        btnActualizar.addEventListener('click', async () => {
+            const pax = parseInt(inputPasajeros.value) || 0;
+            const selEst = document.getElementById('sel-estacion');
+            const nombreEstacion = selEst.value;
+            const cap = parseInt(selEst.options[selEst.selectedIndex].getAttribute('data-cap')) || 160;
+
+            try {
+                const res = await fetch('/api/aforo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        pasajeros: pax,
+                        estacion: nombreEstacion,
+                        capacidad: cap
+                    })
+                });
+                const data = await res.json();
+
+                const ahora = new Date();
+                const horaStr = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                const nuevaLectura = document.createElement('div');
+                if (data.alerta) {
+                    banner.style.display = 'flex';
+                    bannerPax.innerText = `${pax} pasajeros en ${nombreEstacion} (Cap: ${cap})`;
+                    nuevaLectura.className = 'lectura-item sobredemanda';
+                    nuevaLectura.innerHTML = `<span>${horaStr} hrs - Sobredemanda en ${nombreEstacion}</span><span class="tag-pax red">${pax} pax</span>`;
+                } else {
+                    banner.style.display = 'none';
+                    nuevaLectura.className = 'lectura-item normal';
+                    nuevaLectura.innerHTML = `<span>${horaStr} hrs - Aforo normal en ${nombreEstacion}</span><span class="tag-pax green">${pax} pax</span>`;
+                }
+
+                listaLecturas.prepend(nuevaLectura);
+            } catch (err) {
+                console.error("Error al registrar aforo:", err);
+            }
+        });
+
+        // Temporizador de retención
+        let tiempoRestante = 195; // 03:15
+        const timerElem = document.getElementById('timer');
+        const btnSalida = document.getElementById('btn-salida');
+
+        const intervalo = setInterval(() => {
+            if (tiempoRestante <= 0) {
+                clearInterval(intervalo);
+                timerElem.innerText = "00:00";
+                btnSalida.className = "btn-salida autorizado";
+                btnSalida.innerText = "✅ Salida Autorizada";
+                btnSalida.disabled = false;
+            } else {
+                tiempoRestante--;
+                const min = String(Math.floor(tiempoRestante / 60)).padStart(2, '0');
+                const seg = String(tiempoRestante % 60).padStart(2, '0');
+                timerElem.innerText = `${min}:${seg}`;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
