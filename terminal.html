@@ -19,7 +19,6 @@
         .navbar .brand { font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
         .navbar .meta { font-size: 0.9rem; display: flex; align-items: center; gap: 15px; }
 
-        /* Estilo para los Selectores de la Barra */
         .select-header {
             background-color: #243b55;
             color: #fff;
@@ -190,7 +189,6 @@
     <nav class="navbar">
         <div class="brand">🚎 Control Transmetro</div>
         <div class="meta">
-            <!-- Selector interactivo de Estación -->
             <span>📍 Estación:
                 <select id="sel-estacion" class="select-header" onchange="actualizarParametrosEstacion()">
                     <option value="Centra Sur" data-cap="160">Centra Sur (160 pax)</option>
@@ -201,7 +199,6 @@
                 </select>
             </span>
 
-            <!-- Selector interactivo de Operador -->
             <span>👤 Operador:
                 <select id="sel-operador" class="select-header">
                     <option value="Carlos Gómez">Carlos Gómez (Turno Matutino)</option>
@@ -220,7 +217,7 @@
         <!-- Banner de Alerta Crítica -->
         <div id="banner-alerta">
             <div class="alerta-texto">
-                <h3>⚠️ ¡ALERTA CRÍTICA: SOBREDEMANDA (≥ 50%)!</h3>
+                <h3>⚠️ ¡ALERTA CRÍTICA: SOBREDEMANDA (≥ 150%)!</h3>
                 <p id="banner-desc">Aforo actual: <strong id="banner-pax">260 pasajeros</strong> en andén. Notificado a Central para despacho de refuerzo.</p>
             </div>
             <div class="badge-despacho">DESPACHO SOLICITADO</div>
@@ -236,7 +233,7 @@
                         <div class="form-control-static" id="lbl-capacidad">160 pasajeros</div>
                     </div>
                     <div class="form-group">
-                        <label>Umbral Alerta (+50%)</label>
+                        <label>Umbral Alerta (150%)</label>
                         <div class="form-control-static" id="lbl-umbral" style="color: #e02424;">240 pasajeros</div>
                     </div>
                 </div>
@@ -259,10 +256,16 @@
             <!-- Panel 2: Despacho de Bus -->
             <div class="card">
                 <h2>⏱️ 2. Despacho de Unidad en Bahía</h2>
+                
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Unidad en Plataforma</label>
-                        <div class="form-control-static">Bus TM-042 (Articulado)</div>
+                        <label>Seleccionar Bus en Plataforma</label>
+                        <select id="sel-bus-plataforma" class="form-control-static" style="width: 100%; cursor: pointer;" onchange="cambiarBusPlataforma()">
+                            <option value="TM-042" data-tipo="Articulado" data-cap="160" data-pax="30">Bus TM-042 (Articulado - 160 pax)</option>
+                            <option value="TM-015" data-tipo="Bi-Articulado" data-cap="240" data-pax="150">Bus TM-015 (Bi-Articulado - 240 pax)</option>
+                            <option value="TM-088" data-tipo="Padrón" data-cap="80" data-pax="12">Bus TM-088 (Padrón - 80 pax)</option>
+                            <option value="TM-104" data-tipo="Articulado" data-cap="160" data-pax="85">Bus TM-104 (Articulado - 160 pax)</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Ocupación a Bordo</label>
@@ -271,8 +274,8 @@
                 </div>
 
                 <div class="box-retencion" id="box-retencion">
-                    <h4>🕒 RETENCIÓN OBLIGATORIA ACTIVA (&lt; 25%)</h4>
-                    <p>Por regla de negocio, al arribar con menos del 25% de capacidad, el bus debe esperar 5 minutos para recibir transbordo.</p>
+                    <h4 id="retencion-titulo">🕒 RETENCIÓN OBLIGATORIA ACTIVA (&lt; 25%)</h4>
+                    <p id="retencion-desc">Por regla de negocio, al arribar con menos del 25% de capacidad, el bus debe esperar en bahía para recibir transbordo.</p>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.85rem; color: #854d0e; font-weight: bold;">Tiempo Restante:</span>
                         <div class="timer-display" id="timer">03:15</div>
@@ -285,7 +288,6 @@
     </div>
 
     <script>
-        // Actualizar parámetros según la estación seleccionada
         function actualizarParametrosEstacion() {
             const sel = document.getElementById('sel-estacion');
             const cap = parseInt(sel.options[sel.selectedIndex].getAttribute('data-cap')) || 160;
@@ -340,25 +342,78 @@
             }
         });
 
-        // Temporizador de retención
-        let tiempoRestante = 195; // 03:15
+        let tiempoRestante = 195;
+        let intervalo = null;
         const timerElem = document.getElementById('timer');
         const btnSalida = document.getElementById('btn-salida');
+        const boxRetencion = document.getElementById('box-retencion');
+        const retencionTitulo = document.getElementById('retencion-titulo');
+        const retencionDesc = document.getElementById('retencion-desc');
+        const busOcupacion = document.getElementById('bus-ocupacion');
 
-        const intervalo = setInterval(() => {
-            if (tiempoRestante <= 0) {
-                clearInterval(intervalo);
+        function iniciarTemporizador(segundos) {
+            if (intervalo) clearInterval(intervalo);
+            tiempoRestante = segundos;
+            
+            intervalo = setInterval(() => {
+                if (tiempoRestante <= 0) {
+                    clearInterval(intervalo);
+                    timerElem.innerText = "00:00";
+                    btnSalida.className = "btn-salida autorizado";
+                    btnSalida.innerText = "✅ Salida Autorizada (Tiempo cumplido)";
+                    btnSalida.disabled = false;
+                } else {
+                    tiempoRestante--;
+                    const min = String(Math.floor(tiempoRestante / 60)).padStart(2, '0');
+                    const seg = String(tiempoRestante % 60).padStart(2, '0');
+                    timerElem.innerText = `${min}:${seg}`;
+                }
+            }, 1000);
+        }
+
+        function cambiarBusPlataforma() {
+            const selBus = document.getElementById('sel-bus-plataforma');
+            const opt = selBus.options[selBus.selectedIndex];
+            const cap = parseInt(opt.getAttribute('data-cap')) || 160;
+            const pax = parseInt(opt.getAttribute('data-pax')) || 0;
+            const pct = ((pax / cap) * 100).toFixed(1);
+
+            busOcupacion.innerText = `${pax} pax (${pct}%)`;
+
+            if (pct < 25) {
+                busOcupacion.style.color = "#d97706";
+                boxRetencion.style.display = "block";
+                boxRetencion.style.backgroundColor = "#fef9c3";
+                boxRetencion.style.borderColor = "#fde047";
+                retencionTitulo.style.color = "#854d0e";
+                retencionTitulo.innerText = "🕒 RETENCIÓN OBLIGATORIA ACTIVA (< 25%)";
+                retencionDesc.style.color = "#854d0e";
+                retencionDesc.innerText = `Ocupación insuficiente (${pct}%). El bus debe esperar en bahía para recibir transbordo.`;
+                btnSalida.className = "btn-salida";
+                btnSalida.innerText = "🔒 Salida Bloqueada (Esperando fin de temporizador)";
+                btnSalida.disabled = true;
+                iniciarTemporizador(180);
+            } else {
+                if (intervalo) clearInterval(intervalo);
+                busOcupacion.style.color = "#0e9f6e";
+                boxRetencion.style.display = "block";
+                boxRetencion.style.backgroundColor = "#def7ec";
+                boxRetencion.style.borderColor = "#84e1bc";
+                retencionTitulo.style.color = "#03543f";
+                retencionTitulo.innerText = "✅ OCUPACIÓN SUFICIENTE (≥ 25%)";
+                retencionDesc.style.color = "#03543f";
+                retencionDesc.innerText = `Unidad con ${pct}% de ocupación. No requiere retención de absorción.`;
                 timerElem.innerText = "00:00";
                 btnSalida.className = "btn-salida autorizado";
-                btnSalida.innerText = "✅ Salida Autorizada";
+                btnSalida.innerText = "✅ Salida Inmediata Autorizada";
                 btnSalida.disabled = false;
-            } else {
-                tiempoRestante--;
-                const min = String(Math.floor(tiempoRestante / 60)).padStart(2, '0');
-                const seg = String(tiempoRestante % 60).padStart(2, '0');
-                timerElem.innerText = `${min}:${seg}`;
             }
-        }, 1000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            actualizarParametrosEstacion();
+            cambiarBusPlataforma();
+        });
     </script>
 </body>
 </html>
