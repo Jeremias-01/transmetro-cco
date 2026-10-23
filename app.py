@@ -23,21 +23,23 @@ init_tables()
 def login():
     error = None
     if request.method == 'POST':
-        # Captura tanto de formulario tradicional (x-www-form-urlencoded) como de JSON
-        usuario = (request.form.get('usuario') or (request.json and request.json.get('usuario')) or '').strip().upper()
+        usuario = (request.form.get('usuario') or (request.json and request.json.get('usuario')) or '').strip().lower()
         password = (request.form.get('password') or (request.json and request.json.get('password')) or '').strip()
 
-        # Validación estricta de credenciales oficiales
-        if (usuario == 'SYSTEM' and password == 'oracle') or (usuario == 'ADMIN' and password == 'admin123'):
-            session['usuario'] = usuario
+        # Acceso por defecto: admin / admin (o admin123) y SYSTEM / oracle
+        es_admin = (usuario == 'admin' and password in ['admin', 'admin123', 'Admin123'])
+        es_oracle = (usuario == 'system' and password == 'oracle')
+
+        if es_admin or es_oracle:
+            session['usuario'] = usuario.upper()
             if request.is_json:
                 return jsonify({"status": "success", "redirect": url_for('dashboard')})
             return redirect(url_for('dashboard'))
         else:
-            error = "Credenciales incorrectas. Verifique usuario y contraseña."
+            error = "Credenciales incorrectas. Verifique su usuario y contraseña."
             if request.is_json:
                 return jsonify({"status": "error", "mensaje": error}), 401
-            
+
     return render_template('login.html', error=error)
 
 @app.route('/logout')
