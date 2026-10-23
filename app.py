@@ -21,20 +21,24 @@ init_tables()
 @app.route('/login', methods=['GET', 'POST'])
 @app.route('/login.html', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
-        usuario = (request.form.get('usuario') or '').strip().upper()
-        password = (request.form.get('password') or '').strip()
+        # Captura tanto de formulario tradicional (x-www-form-urlencoded) como de JSON
+        usuario = (request.form.get('usuario') or (request.json and request.json.get('usuario')) or '').strip().upper()
+        password = (request.form.get('password') or (request.json and request.json.get('password')) or '').strip()
 
+        # Validación estricta de credenciales oficiales
         if (usuario == 'SYSTEM' and password == 'oracle') or (usuario == 'ADMIN' and password == 'admin123'):
             session['usuario'] = usuario
+            if request.is_json:
+                return jsonify({"status": "success", "redirect": url_for('dashboard')})
             return redirect(url_for('dashboard'))
-        return render_template('login.html', error="Credenciales inválidas")
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.pop('usuario', None)
-    return redirect(url_for('login'))
+        else:
+            error = "Credenciales incorrectas. Verifique usuario y contraseña."
+            if request.is_json:
+                return jsonify({"status": "error", "mensaje": error}), 401
+            
+    return render_template('login.html', error=error)
 
 # ==========================================
 # VISTAS PRINCIPALES (GESTIÓN, TERMINAL, REPORTES)
