@@ -37,11 +37,13 @@ def logout():
     return redirect(url_for('login'))
 
 # ==========================================
-# VISTAS PRINCIPALES
+# VISTAS PRINCIPALES (GESTIÓN, TERMINAL, REPORTES)
 # ==========================================
 @app.route('/')
 @app.route('/index.html')
 @app.route('/dashboard')
+@app.route('/gestion')
+@app.route('/gestion.html')
 def dashboard():
     if not session.get('usuario'):
         return redirect(url_for('login'))
@@ -53,6 +55,13 @@ def terminal():
     if not session.get('usuario'):
         return redirect(url_for('login'))
     return render_template('terminal.html')
+
+@app.route('/reportes')
+@app.route('/reportes.html')
+def reportes():
+    if not session.get('usuario'):
+        return redirect(url_for('login'))
+    return render_template('reportes.html')
 
 # ==========================================
 # APIS REST: CRUD DE RUTAS (LÍNEAS)
