@@ -19,7 +19,7 @@
             background: #ffffff;
             width: 100%;
             max-width: 400px;
-            padding: 30px;
+            padding: 35px 30px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
@@ -30,7 +30,8 @@
         .brand-header h1 {
             font-size: 1.4rem;
             color: #0b192c;
-            margin: 0 0 5px 0;
+            margin: 0 0 6px 0;
+            font-weight: 700;
         }
         .brand-header p {
             font-size: 0.85rem;
@@ -71,6 +72,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
+            margin-top: 5px;
         }
         .btn-submit:hover {
             background-color: #1e3a8a;
@@ -87,15 +89,13 @@
             align-items: center;
             gap: 8px;
         }
-        .credenciales-hint {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8fafc;
-            border-radius: 6px;
-            font-size: 0.78rem;
-            color: #64748b;
+        .footer-institucional {
+            margin-top: 25px;
             text-align: center;
-            border: 1px dashed #cbd5e1;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 15px;
         }
     </style>
 </head>
@@ -104,10 +104,9 @@
     <div class="login-card">
         <div class="brand-header">
             <h1>🚎 CCO Transmetro</h1>
-            <p>Centro de Control de Operaciones - Municipalidad de Guatemala</p>
+            <p>Centro de Control de Operaciones<br>Dirección de Operaciones — Municipalidad de Guatemala</p>
         </div>
 
-        <!-- Alerta de Error en caso de credenciales inválidas -->
         {% if error %}
         <div class="alert-error">
             <span>⚠️</span>
@@ -115,11 +114,10 @@
         </div>
         {% endif %}
 
-        <!-- Formulario POST hacia /login -->
         <form action="/login" method="POST">
             <div class="form-group">
                 <label for="usuario">Usuario del Sistema:</label>
-                <input type="text" id="usuario" name="usuario" placeholder="Ej. SYSTEM" required autocomplete="off">
+                <input type="text" id="usuario" name="usuario" placeholder="Ingrese su usuario institucional" required autocomplete="off">
             </div>
 
             <div class="form-group">
@@ -127,13 +125,11 @@
                 <input type="password" id="password" name="password" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn-submit">Ingresar al CCO</button>
+            <button type="submit" class="btn-submit">Ingresar al Sistema</button>
         </form>
 
-        <div class="credenciales-hint">
-            <strong>Credenciales Autorizadas:</strong><br>
-            Administrador: <code>SYSTEM</code> / <code>oracle</code><br>
-            Supervisor: <code>ADMIN</code> / <code>admin123</code>
+        <div class="footer-institucional">
+            Acceso restringido únicamente a personal autorizado de la Dirección de Operaciones.
         </div>
     </div>
 

@@ -40,6 +40,12 @@ def login():
             
     return render_template('login.html', error=error)
 
+@app.route('/logout')
+@app.route('/logout.html')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
 # ==========================================
 # VISTAS PRINCIPALES (GESTIÓN, TERMINAL, REPORTES)
 # ==========================================
