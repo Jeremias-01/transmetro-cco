@@ -245,12 +245,8 @@
         <header class="topbar">
             <div class="route-picker">
                 <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">Línea en Vista:</label>
-                <select id="sel-vista-linea" onchange="filtrarTablasPorLinea(this.value)">
+                <select id="sel-vista-linea">
                     <option value="TODAS">Todas las Líneas</option>
-                    <option value="Línea 12">Línea 12 (Eje Sur)</option>
-                    <option value="Línea 1">Línea 1 (Centro)</option>
-                    <option value="Línea 7">Línea 7 (Periférico)</option>
-                    <option value="Línea 13">Línea 13 (Oriente)</option>
                 </select>
             </div>
             <div>
@@ -316,10 +312,7 @@
                         <div class="form-group"><label>Capacidad</label><input type="number" id="nb-cap" value="160"></div>
                         <div class="form-group"><label>Línea Asignada</label>
                             <select id="nb-lin">
-                                <option value="Línea 12">Línea 12</option>
-                                <option value="Línea 1">Línea 1</option>
-                                <option value="Línea 7">Línea 7</option>
-                                <option value="Línea 13">Línea 13</option>
+                                <!-- Se llena dinámicamente -->
                             </select>
                         </div>
                     </div>
@@ -358,10 +351,7 @@
                         <div class="form-group"><label>Capacidad Nominal (pax)</label><input type="number" id="ne-cap" value="160"></div>
                         <div class="form-group"><label>Línea</label>
                             <select id="ne-lin">
-                                <option value="Línea 12">Línea 12</option>
-                                <option value="Línea 1">Línea 1</option>
-                                <option value="Línea 7">Línea 7</option>
-                                <option value="Línea 13">Línea 13</option>
+                                <!-- Se llena dinámicamente -->
                             </select>
                         </div>
                     </div>
@@ -438,23 +428,53 @@
     </div>
 
     <script>
+        let listaRutasGlobal = [];
 
-        // Actualiza el selector de líneas sin cambiar nada del diseño visual
+        // Función que actualiza todos los selectores de líneas con los datos reales de la BD
         async function actualizarSelectoresRutas() {
-            const res = await fetch('/api/rutas');
-            const rutas = await res.json();
-            const select = document.getElementById('bus-linea'); // o el ID de tu selector de línea
-            if (select) {
-                select.innerHTML = '';
-                rutas.forEach(r => {
-                    const opt = document.createElement('option');
-                    opt.value = r.nombre;
-                    opt.textContent = r.nombre;
-                    select.appendChild(opt);
-                });
+            try {
+                const res = await fetch('/api/rutas');
+                if (!res.ok) return;
+                listaRutasGlobal = await res.json();
+
+                // Selectores en formularios
+                const selBusLin = document.getElementById('nb-lin');
+                const selEstLin = document.getElementById('ne-lin');
+                const selTopBar = document.getElementById('sel-vista-linea');
+
+                if (selBusLin) {
+                    selBusLin.innerHTML = '';
+                    listaRutasGlobal.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.nombre;
+                        opt.textContent = `${r.nombre} (${r.origen} - ${r.destino})`;
+                        selBusLin.appendChild(opt);
+                    });
+                }
+
+                if (selEstLin) {
+                    selEstLin.innerHTML = '';
+                    listaRutasGlobal.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.nombre;
+                        opt.textContent = r.nombre;
+                        selEstLin.appendChild(opt);
+                    });
+                }
+
+                if (selTopBar) {
+                    selTopBar.innerHTML = '<option value="TODAS">Todas las Líneas</option>';
+                    listaRutasGlobal.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.nombre;
+                        opt.textContent = `${r.nombre} (${r.origen} - ${r.destino})`;
+                        selTopBar.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Error al actualizar selectores de rutas:", err);
             }
         }
-        
 
         // Pestañas
         function verPestaña(tabId, boton) {
@@ -490,6 +510,7 @@
                 `;
                 tbody.appendChild(tr);
             });
+            await actualizarSelectoresRutas();
         }
 
         async function crearRuta() {
@@ -507,7 +528,7 @@
             document.getElementById('nr-nom').value = '';
             document.getElementById('nr-ori').value = '';
             document.getElementById('nr-des').value = '';
-            cargarRutas();
+            await cargarRutas();
         }
 
         function abrirEditarRuta(r) {
@@ -537,7 +558,7 @@
                     })
                 });
                 cerrarModal();
-                cargarRutas();
+                await cargarRutas();
             };
             document.getElementById('modal-edicion').style.display = 'flex';
         }
@@ -545,7 +566,7 @@
         async function eliminarRuta(id) {
             if(!confirm('¿Seguro que deseas eliminar esta ruta?')) return;
             await fetch(`/api/rutas/${id}`, { method: 'DELETE' });
-            cargarRutas();
+            await cargarRutas();
         }
 
         // ==========================================
@@ -595,16 +616,19 @@
 
         function abrirEditarBus(b) {
             document.getElementById('modal-titulo').innerText = `Editar Unidad: ${b.codigo}`;
+            
+            // Opciones de rutas dinámicas para el modal
+            const opcionesRutas = listaRutasGlobal.length > 0
+                ? listaRutasGlobal.map(r => `<option value="${r.nombre}" ${b.linea === r.nombre ? 'selected' : ''}>${r.nombre}</option>`).join('')
+                : `<option value="${b.linea}" selected>${b.linea}</option>`;
+
             document.getElementById('modal-cuerpo').innerHTML = `
                 <div class="form-group" style="margin-bottom:10px;"><label>Código Bus</label><input type="text" id="m-b-cod" value="${b.codigo}"></div>
                 <div class="form-group" style="margin-bottom:10px;"><label>Tipo</label><input type="text" id="m-b-tip" value="${b.tipo}"></div>
                 <div class="form-group" style="margin-bottom:10px;"><label>Capacidad (pax)</label><input type="number" id="m-b-cap" value="${b.capacidad}"></div>
                 <div class="form-group" style="margin-bottom:10px;"><label>Línea Asignada</label>
                     <select id="m-b-lin">
-                        <option value="Línea 12" ${b.linea==='Línea 12'?'selected':''}>Línea 12</option>
-                        <option value="Línea 1" ${b.linea==='Línea 1'?'selected':''}>Línea 1</option>
-                        <option value="Línea 7" ${b.linea==='Línea 7'?'selected':''}>Línea 7</option>
-                        <option value="Línea 13" ${b.linea==='Línea 13'?'selected':''}>Línea 13</option>
+                        ${opcionesRutas}
                     </select>
                 </div>
                 <div class="form-group"><label>Estado Operativo</label>
@@ -683,15 +707,17 @@
 
         function abrirEditarEstacion(e) {
             document.getElementById('modal-titulo').innerText = `Editar Estación: ${e.nombre}`;
+            
+            const opcionesRutas = listaRutasGlobal.length > 0
+                ? listaRutasGlobal.map(r => `<option value="${r.nombre}" ${e.linea === r.nombre ? 'selected' : ''}>${r.nombre}</option>`).join('')
+                : `<option value="${e.linea}" selected>${e.linea}</option>`;
+
             document.getElementById('modal-cuerpo').innerHTML = `
                 <div class="form-group" style="margin-bottom:10px;"><label>Nombre Estación</label><input type="text" id="m-e-nom" value="${e.nombre}"></div>
                 <div class="form-group" style="margin-bottom:10px;"><label>Capacidad Nominal (pax)</label><input type="number" id="m-e-cap" value="${e.capacidad}"></div>
                 <div class="form-group" style="margin-bottom:10px;"><label>Línea</label>
                     <select id="m-e-lin">
-                        <option value="Línea 12" ${e.linea==='Línea 12'?'selected':''}>Línea 12</option>
-                        <option value="Línea 1" ${e.linea==='Línea 1'?'selected':''}>Línea 1</option>
-                        <option value="Línea 7" ${e.linea==='Línea 7'?'selected':''}>Línea 7</option>
-                        <option value="Línea 13" ${e.linea==='Línea 13'?'selected':''}>Línea 13</option>
+                        ${opcionesRutas}
                     </select>
                 </div>
                 <div class="form-group"><label>Estado</label>
@@ -809,11 +835,11 @@
         }
 
         // Cargar todo al inicio
-        window.onload = () => {
-            cargarRutas();
-            cargarBuses();
-            cargarEstaciones();
-            cargarPilotos();
+        window.onload = async () => {
+            await cargarRutas();
+            await cargarBuses();
+            await cargarEstaciones();
+            await cargarPilotos();
         };
     </script>
 </body>
