@@ -438,6 +438,24 @@
     </div>
 
     <script>
+
+        // Actualiza el selector de líneas sin cambiar nada del diseño visual
+        async function actualizarSelectoresRutas() {
+            const res = await fetch('/api/rutas');
+            const rutas = await res.json();
+            const select = document.getElementById('bus-linea'); // o el ID de tu selector de línea
+            if (select) {
+                select.innerHTML = '';
+                rutas.forEach(r => {
+                    const opt = document.createElement('option');
+                    opt.value = r.nombre;
+                    opt.textContent = r.nombre;
+                    select.appendChild(opt);
+                });
+            }
+        }
+        
+
         // Pestañas
         function verPestaña(tabId, boton) {
             document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
