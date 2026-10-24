@@ -3,597 +3,800 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro de Control de Operaciones - Transmetro</title>
+    <title>CCO Transmetro - Gestión Administrativa y Operativa</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { margin: 0; background-color: #f1f5f9; color: #1e293b; }
-        
-        .navbar {
-            background-color: #0b192c;
-            color: #ffffff;
-            padding: 12px 25px;
+        :root {
+            --primary: #0b192c;
+            --primary-light: #1e3e62;
+            --accent-green: #00843d;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --bg-canvas: #f1f5f9;
+            --surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { display: flex; height: 100vh; background-color: var(--bg-canvas); color: var(--text-dark); overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 16px;
+        }
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
+            margin-bottom: 14px;
+        }
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-green);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .brand-text h2 { font-size: 1.15rem; font-weight: 800; }
+        .brand-text span { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+
+        .nav-list { display: flex; flex-direction: column; gap: 5px; list-style: none; }
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .nav-btn.active {
+            background: var(--accent-green);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 132, 61, 0.35);
+        }
+
+        .user-footer {
+            background: rgba(255,255,255,0.06);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-footer .role { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
+        .user-footer .name { font-size: 0.85rem; font-weight: 700; }
+        .btn-logout { color: #f87171; text-decoration: none; font-size: 0.8rem; font-weight: 600; display: inline-block; margin-top: 4px; }
+
+        /* MAIN */
+        .workspace { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar {
+            background: var(--surface);
+            padding: 14px 32px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .navbar .brand { font-size: 1.25rem; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .navbar .nav-links { display: flex; align-items: center; gap: 12px; }
-        
-        .btn-nav {
-            color: #ffffff;
-            text-decoration: none;
+        .route-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
             padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 0.88rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: 0.2s;
-        }
-        .btn-nav:hover { background-color: rgba(255,255,255,0.1); }
-        .btn-terminal { background-color: #2563eb; border-color: #3b82f6; font-weight: 600; }
-        .btn-terminal:hover { background-color: #1d4ed8; }
-        .btn-logout { background-color: #dc2626; border-color: #ef4444; font-weight: 600; }
-        .btn-logout:hover { background-color: #b91c1c; }
-
-        .container { max-width: 1200px; margin: 25px auto; padding: 0 15px; }
-
-        .header-title { margin-bottom: 20px; }
-        .header-title h1 { margin: 0 0 5px 0; font-size: 1.5rem; color: #0b192c; }
-        .header-title p { margin: 0; color: #64748b; font-size: 0.9rem; }
-
-        /* Pestañas */
-        .tabs { display: flex; gap: 8px; border-bottom: 2px solid #cbd5e1; margin-bottom: 20px; }
-        .tab-btn {
-            padding: 10px 18px;
-            background: none;
-            border: none;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            transition: 0.2s;
-        }
-        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .card {
-            background: #ffffff;
             border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .route-picker select {
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            color: var(--primary);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .content-body { padding: 24px 32px; }
+
+        .tab-section { display: none; }
+        .tab-section.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        .title-block { margin-bottom: 20px; }
+        .title-block h1 { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .title-block p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .panel {
+            background: var(--surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
             padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             margin-bottom: 20px;
         }
+        .panel h3 { font-size: 1.05rem; color: var(--primary); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-group label { font-size: 0.82rem; font-weight: 600; color: #475569; }
-        .form-group input, .form-group select {
-            padding: 9px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            outline: none;
-            font-size: 0.9rem;
-        }
-        .form-group input:focus, .form-group select:focus { border-color: #2563eb; }
-
-        .btn-primary {
-            background-color: #0b192c;
-            color: #ffffff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-primary:hover { background-color: #1e3a8a; }
-
-        /* Tablas */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; color: #475569; font-weight: 600; }
-        tr:hover { background-color: #f8fafc; }
+        /* TABLAS Y ACCIONES CRUD */
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th, td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { background: #f8fafc; color: var(--text-muted); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; }
 
         .badge {
             padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.78rem;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
         }
-        .badge-activa, .badge-operativa, .badge-ruta { background: #dcfce7; color: #15803d; }
-        .badge-taller { background: #fee2e2; color: #b91c1c; }
+        .badge-green { background: #dcfce7; color: #15803d; }
+        .badge-amber { background: #fef3c7; color: #b45309; }
+        .badge-red { background: #fee2e2; color: #b91c1c; }
+        .badge-blue { background: #e0f2fe; color: #0369a1; }
 
-        .btn-delete {
-            background: #ef4444;
-            color: #fff;
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
             border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
             cursor: pointer;
+            margin-right: 4px;
+            transition: 0.15s;
         }
-        .btn-delete:hover { background: #dc2626; }
+        .btn-edit { background: #e0f2fe; color: #0369a1; }
+        .btn-edit:hover { background: #bae6fd; }
+        .btn-del { background: #fee2e2; color: #b91c1c; }
+        .btn-del:hover { background: #fecaca; }
+
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .btn-save-new {
+            background: var(--primary);
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .btn-save-new:hover { background: var(--primary-light); }
+
+        /* MODAL FLOTANTE DE EDICIÓN */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        .modal-card {
+            background: #fff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+        }
+        .modal-card h3 { font-size: 1.15rem; color: var(--primary); margin-bottom: 16px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+        .btn-cancel { background: #f1f5f9; color: #475569; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-confirm { background: var(--accent-green); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="brand">🚎 CCO Transmetro — Consola Central</div>
-        <div class="nav-links">
-            <a href="/terminal" class="btn-nav btn-terminal">💻 Terminal en Vivo</a>
-            <a href="/reportes" class="btn-nav">📊 Reportes SQL</a>
-            <a href="/logout" class="btn-nav btn-logout">Cerrar Sesión</a>
-        </div>
-    </nav>
+    <!-- MENÚ LATERAL -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand-header">
+                <div class="brand-logo">🚎</div>
+                <div class="brand-text">
+                    <h2>Transmetro</h2>
+                    <span>Gestión CCO</span>
+                </div>
+            </div>
 
-    <div class="container">
-        <div class="header-title">
-            <h1>Gestión Operativa del Sistema Integrado</h1>
-            <p>Administración y despacho centralizado de líneas, flota vehicular, estaciones y personal operativo.</p>
-        </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" onclick="cambiarPestana('rutas', this)">🛣️ Líneas y Frecuencias</button>
-            <button class="tab-btn" onclick="cambiarPestana('buses', this)">🚌 Flota de Buses</button>
-            <button class="tab-btn" onclick="cambiarPestana('estaciones', this)">📍 Estaciones</button>
-            <button class="tab-btn" onclick="cambiarPestana('pilotos', this)">👤 Pilotos</button>
+            <ul class="nav-list">
+                <li><button class="nav-btn active" onclick="verPestaña('rutas', this)">🔀 Líneas / Rutas</button></li>
+                <li><button class="nav-btn" onclick="verPestaña('buses', this)">🚌 Flota de Buses</button></li>
+                <li><button class="nav-btn" onclick="verPestaña('estaciones', this)">📍 Estaciones & Aforo</button></li>
+                <li><button class="nav-btn" onclick="verPestaña('pilotos', this)">👨‍✈️ Pilotos</button></li>
+                <li><button class="nav-btn" onclick="window.location.href='/terminal.html'">🚨 Terminal en Vivo</button></li>
+            </ul>
         </div>
 
-        <!-- PESTAÑA 1: RUTAS -->
-        <div id="tab-rutas" class="tab-content active">
-            <div class="card">
-                <h3>Registrar / Modificar Línea</h3>
-                <form id="form-ruta" onsubmit="guardarRuta(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre de Línea:</label>
-                            <input type="text" id="ruta-nombre" placeholder="Ej. Línea 12" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Estación Origen:</label>
-                            <input type="text" id="ruta-origen" placeholder="Ej. Centra Sur" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Estación Destino:</label>
-                            <input type="text" id="ruta-destino" placeholder="Ej. Plaza Barrios" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tiempo Espera (min):</label>
-                            <input type="number" id="ruta-tiempo" value="5" min="1" required>
-                        </div>
-                        <button type="submit" class="btn-primary">Guardar Línea</button>
+        <div class="user-footer">
+            <div class="role">Operador Conectado</div>
+            <div class="name">SYSTEM (Admin)</div>
+            <a href="/logout" class="btn-logout">Cerrar Sesión ➔</a>
+        </div>
+    </aside>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+        <header class="topbar">
+            <div class="route-picker">
+                <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">Línea en Vista:</label>
+                <select id="sel-vista-linea" onchange="filtrarTablasPorLinea(this.value)">
+                    <option value="TODAS">Todas las Líneas</option>
+                    <option value="Línea 12">Línea 12 (Eje Sur)</option>
+                    <option value="Línea 1">Línea 1 (Centro)</option>
+                    <option value="Línea 7">Línea 7 (Periférico)</option>
+                    <option value="Línea 13">Línea 13 (Oriente)</option>
+                </select>
+            </div>
+            <div>
+                <span class="badge badge-green">Oracle 21c Transaccional</span>
+            </div>
+        </header>
+
+        <div class="content-body">
+
+            <!-- 1. MÓDULO CRUD: LÍNEAS / RUTAS -->
+            <section id="tab-rutas" class="tab-section active">
+                <div class="title-block">
+                    <h1>Administración de Líneas y Frecuencias</h1>
+                    <p>Configure nombres, trayectos y <strong>minutos de espera en bahía</strong> según la demanda de la ruta</p>
+                </div>
+
+                <div class="panel">
+                    <h3>+ Agregar Nueva Línea</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Nombre</label><input type="text" id="nr-nom" placeholder="Ej: Línea 2"></div>
+                        <div class="form-group"><label>Origen</label><input type="text" id="nr-ori" placeholder="Ej: San Antonio"></div>
+                        <div class="form-group"><label>Destino</label><input type="text" id="nr-des" placeholder="Ej: USAC"></div>
+                        <div class="form-group"><label>Minutos Espera</label><input type="number" id="nr-min" value="5"></div>
                     </div>
-                </form>
-            </div>
+                    <button class="btn-save-new" onclick="crearRuta()">Guardar Línea en Oracle</button>
+                </div>
 
-            <div class="card">
-                <h3>Líneas Registradas en el Sistema</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Línea</th>
-                            <th>Origen</th>
-                            <th>Destino</th>
-                            <th>Espera Regulada</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-rutas-body"></tbody>
-                </table>
-            </div>
-        </div>
+                <div class="panel">
+                    <h3>Líneas Registradas</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Línea</th>
+                                <th>Origen ➔ Destino</th>
+                                <th>Tiempo Espera (Minutos)</th>
+                                <th>Estado</th>
+                                <th>Acciones de Cliente</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-rutas"></tbody>
+                    </table>
+                </div>
+            </section>
 
-        <!-- PESTAÑA 2: BUSES -->
-        <div id="tab-buses" class="tab-content">
-            <div class="card">
-                <h3>Registrar Unidad Vehicular</h3>
-                <form id="form-bus" onsubmit="guardarBus(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Código de Bus:</label>
-                            <input type="text" id="bus-codigo" placeholder="Ej. TM-055" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo de Unidad:</label>
-                            <select id="bus-tipo" onchange="actualizarCapacidadBus()">
-                                <option value="Articulado" data-cap="160">Articulado (160 pax)</option>
-                                <option value="Bi-Articulado" data-cap="240">Bi-Articulado (240 pax)</option>
-                                <option value="Padrón" data-cap="80">Padrón (80 pax)</option>
+            <!-- 2. MÓDULO CRUD: FLOTA DE BUSES -->
+            <section id="tab-buses" class="tab-section">
+                <div class="title-block">
+                    <h1>Administración de Flota de Buses</h1>
+                    <p>Reasigne buses de línea, cambie capacidades y actualice estados a <strong>Taller o Mantenimiento</strong></p>
+                </div>
+
+                <div class="panel">
+                    <h3>+ Registrar Unidad en Flota</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Código Bus</label><input type="text" id="nb-cod" placeholder="Ej: TM-099"></div>
+                        <div class="form-group"><label>Tipo</label>
+                            <select id="nb-tip">
+                                <option value="Articulado">Articulado (160 pax)</option>
+                                <option value="Bi-Articulado">Bi-Articulado (240 pax)</option>
+                                <option value="Padrón">Padrón (90 pax)</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Línea Asignada:</label>
-                            <select id="bus-linea" required>
-                                <!-- Se llena dinámicamente con las rutas creadas -->
+                        <div class="form-group"><label>Capacidad</label><input type="number" id="nb-cap" value="160"></div>
+                        <div class="form-group"><label>Línea Asignada</label>
+                            <select id="nb-lin">
+                                <option value="Línea 12">Línea 12</option>
+                                <option value="Línea 1">Línea 1</option>
+                                <option value="Línea 7">Línea 7</option>
+                                <option value="Línea 13">Línea 13</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>Estado Operativo:</label>
-                            <select id="bus-estado">
-                                <option value="En Ruta">En Ruta</option>
-                                <option value="En Espera">En Espera</option>
-                                <option value="Mantenimiento">Mantenimiento</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn-primary">Guardar Bus</button>
                     </div>
-                </form>
-            </div>
+                    <button class="btn-save-new" onclick="crearBus()">Guardar Bus en Oracle</button>
+                </div>
 
-            <div class="card">
-                <h3>Flota Vehicular Activa</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Tipo</th>
-                            <th>Capacidad</th>
-                            <th>Línea Asignada</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-buses-body"></tbody>
-                </table>
-            </div>
-        </div>
+                <div class="panel">
+                    <h3>Flota Activa</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Tipo</th>
+                                <th>Capacidad</th>
+                                <th>Línea Asignada</th>
+                                <th>Estado Operativo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-buses"></tbody>
+                    </table>
+                </div>
+            </section>
 
-        <!-- PESTAÑA 3: ESTACIONES -->
-        <div id="tab-estaciones" class="tab-content">
-            <div class="card">
-                <h3>Registrar Estación</h3>
-                <form id="form-estacion" onsubmit="guardarEstacion(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre de Estación:</label>
-                            <input type="text" id="est-nombre" placeholder="Ej. El Trébol" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Capacidad Nominal:</label>
-                            <input type="number" id="est-capacidad" value="160" min="50" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Línea Principal:</label>
-                            <select id="est-linea" required>
-                                <!-- Se llena dinámicamente con las rutas -->
+            <!-- 3. MÓDULO CRUD: ESTACIONES -->
+            <section id="tab-estaciones" class="tab-section">
+                <div class="title-block">
+                    <h1>Administración de Estaciones y Aforo Nominal</h1>
+                    <p>Ajuste la capacidad nominal de los andenes para calibrar el cálculo automático del <strong>150% de sobrecupo</strong></p>
+                </div>
+
+                <div class="panel">
+                    <h3>+ Registrar Nueva Estación</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Nombre Estación</label><input type="text" id="ne-nom" placeholder="Ej: San Juan"></div>
+                        <div class="form-group"><label>Capacidad Nominal (pax)</label><input type="number" id="ne-cap" value="160"></div>
+                        <div class="form-group"><label>Línea</label>
+                            <select id="ne-lin">
+                                <option value="Línea 12">Línea 12</option>
+                                <option value="Línea 1">Línea 1</option>
+                                <option value="Línea 7">Línea 7</option>
+                                <option value="Línea 13">Línea 13</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn-primary">Guardar Estación</button>
                     </div>
-                </form>
-            </div>
+                    <button class="btn-save-new" onclick="crearEstacion()">Guardar Estación en Oracle</button>
+                </div>
 
-            <div class="card">
-                <h3>Estaciones y Aforo Regulado</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Estación</th>
-                            <th>Capacidad Nominal</th>
-                            <th>Umbral Alerta (+50%)</th>
-                            <th>Línea</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-estaciones-body"></tbody>
-                </table>
-            </div>
+                <div class="panel">
+                    <h3>Estaciones de la Red</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Línea</th>
+                                <th>Capacidad Nominal</th>
+                                <th>Umbral Sobredemanda (150%)</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-estaciones"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 4. MÓDULO CRUD: PILOTOS -->
+            <section id="tab-pilotos" class="tab-section">
+                <div class="title-block">
+                    <h1>Catálogo y Reasignación de Pilotos</h1>
+                    <p>Administre personal de conducción, reasigne unidades vehiculares y registre suspensiones o vacaciones</p>
+                </div>
+
+                <div class="panel">
+                    <h3>+ Registrar Nuevo Piloto</h3>
+                    <div class="form-row">
+                        <div class="form-group"><label>Código</label><input type="text" id="np-cod" placeholder="Ej: PIL-099"></div>
+                        <div class="form-group"><label>Nombre Completo</label><input type="text" id="np-nom" placeholder="Ej: Juan Pérez"></div>
+                        <div class="form-group"><label>DPI</label><input type="text" id="np-dpi" placeholder="Ej: 2450123450101"></div>
+                        <div class="form-group"><label>Bus Asignado</label><input type="text" id="np-uni" placeholder="Ej: TM-042"></div>
+                    </div>
+                    <button class="btn-save-new" onclick="crearPiloto()">Guardar Piloto en Oracle</button>
+                </div>
+
+                <div class="panel">
+                    <h3>Pilotos Registrados</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>DPI</th>
+                                <th>Unidad Asignada</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-pilotos"></tbody>
+                    </table>
+                </div>
+            </section>
+
         </div>
+    </div>
 
-        <!-- PESTAÑA 4: PILOTOS -->
-        <div id="tab-pilotos" class="tab-content">
-            <div class="card">
-                <h3>Registrar y Asignar Piloto</h3>
-                <form id="form-piloto" onsubmit="guardarPiloto(event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Código:</label>
-                            <input type="text" id="piloto-codigo" placeholder="Ej. P-105" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nombre Completo:</label>
-                            <input type="text" id="piloto-nombre" placeholder="Ej. Carlos Gómez" required>
-                        </div>
-                        <div class="form-group">
-                            <label>DPI:</label>
-                            <input type="text" id="piloto-dpi" placeholder="Ej. 2450 12345 0101" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Unidad Vehicular:</label>
-                            <select id="piloto-unidad">
-                                <!-- Se llena dinámicamente con los buses existentes -->
-                            </select>
-                        </div>
-                        <button type="submit" class="btn-primary">Guardar Piloto</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="card">
-                <h3>Personal de Conducción Asignado</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>DPI</th>
-                            <th>Unidad Asignada</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-pilotos-body"></tbody>
-                </table>
+    <!-- MODAL UNIVERSAL DE EDICIÓN -->
+    <div id="modal-edicion" class="modal-overlay">
+        <div class="modal-card">
+            <h3 id="modal-titulo">Editar Registro</h3>
+            <div id="modal-cuerpo"></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button class="btn-confirm" id="btn-guardar-modal">Guardar Cambios</button>
             </div>
         </div>
     </div>
 
     <script>
-        let listaRutasGlobal = [];
-        let listaBusesGlobal = [];
+        // Pestañas
+        function verPestaña(tabId, boton) {
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            if(boton) boton.classList.add('active');
+        }
 
-        function cambiarPestana(nombre, boton) {
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(tb => tb.classList.remove('active'));
-            
-            document.getElementById(`tab-${nombre}`).classList.add('active');
-            boton.classList.add('active');
+        function cerrarModal() {
+            document.getElementById('modal-edicion').style.display = 'none';
         }
 
         // ==========================================
-        // SINCRONIZACIÓN DINÁMICA DE SELECTORES
-        // ==========================================
-        function actualizarSelectoresDeRutas() {
-            const selectBusLinea = document.getElementById('bus-linea');
-            const selectEstLinea = document.getElementById('est-linea');
-
-            const opcionesHTML = listaRutasGlobal.length > 0 
-                ? listaRutasGlobal.map(r => `<option value="${r.nombre}">${r.nombre} (${r.origen} - ${r.destino})</option>`).join('')
-                : '<option value="Línea 12">Línea 12</option>';
-
-            if (selectBusLinea) selectBusLinea.innerHTML = opcionesHTML;
-            if (selectEstLinea) selectEstLinea.innerHTML = opcionesHTML;
-        }
-
-        function actualizarSelectoresDeBuses() {
-            const selectPilotoUnidad = document.getElementById('piloto-unidad');
-            if (selectPilotoUnidad) {
-                let html = '<option value="Sin asignar">Sin asignar</option>';
-                listaBusesGlobal.forEach(b => {
-                    html += `<option value="${b.codigo}">${b.codigo} (${b.tipo} - ${b.linea})</option>`;
-                });
-                selectPilotoUnidad.innerHTML = html;
-            }
-        }
-
-        // ==========================================
-        // CONSUMO DE APIS REST (CRUD)
+        // CARGA Y CRUD DE RUTAS
         // ==========================================
         async function cargarRutas() {
-            try {
-                const res = await fetch('/api/rutas');
-                listaRutasGlobal = await res.json();
-                const tbody = document.getElementById('tabla-rutas-body');
-                tbody.innerHTML = '';
-
-                listaRutasGlobal.forEach(r => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${r.nombre}</strong></td>
-                            <td>${r.origen}</td>
-                            <td>${r.destino}</td>
-                            <td><span style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-weight: bold;">${r.tiempo_espera} min</span></td>
-                            <td><span class="badge badge-activa">${r.estado}</span></td>
-                            <td><button class="btn-delete" onclick="eliminarRuta(${r.id})">Eliminar</button></td>
-                        </tr>
-                    `;
-                });
-
-                actualizarSelectoresDeRutas();
-            } catch (err) {
-                console.error("Error al cargar rutas:", err);
-            }
+            const res = await fetch('/api/rutas');
+            const data = await res.json();
+            const tbody = document.getElementById('tbody-rutas');
+            tbody.innerHTML = '';
+            data.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${r.nombre}</strong></td>
+                    <td>${r.origen} ➔ ${r.destino}</td>
+                    <td><span class="badge badge-blue">⏱️ ${r.tiempo_espera} minutos</span></td>
+                    <td><span class="badge ${r.estado === 'Activa' ? 'badge-green' : 'badge-amber'}">${r.estado}</span></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick='abrirEditarRuta(${JSON.stringify(r)})'>✏️ Editar / Minutos</button>
+                        <button class="btn-action btn-del" onclick="eliminarRuta(${r.id})">🗑️ Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        async function guardarRuta(e) {
-            e.preventDefault();
-            const data = {
-                nombre: document.getElementById('ruta-nombre').value,
-                origen: document.getElementById('ruta-origen').value,
-                destino: document.getElementById('ruta-destino').value,
-                tiempo_espera: parseInt(document.getElementById('ruta-tiempo').value)
-            };
+        async function crearRuta() {
+            const nom = document.getElementById('nr-nom').value;
+            const ori = document.getElementById('nr-ori').value;
+            const des = document.getElementById('nr-des').value;
+            const min = document.getElementById('nr-min').value;
+            if(!nom || !ori || !des) return alert('Completa todos los campos');
 
             await fetch('/api/rutas', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre: nom, origen: ori, destino: des, tiempo_espera: min, estado: 'Activa' })
             });
+            document.getElementById('nr-nom').value = '';
+            document.getElementById('nr-ori').value = '';
+            document.getElementById('nr-des').value = '';
+            cargarRutas();
+        }
 
-            document.getElementById('form-ruta').reset();
-            await cargarRutas();
+        function abrirEditarRuta(r) {
+            document.getElementById('modal-titulo').innerText = `Editar Línea: ${r.nombre}`;
+            document.getElementById('modal-cuerpo').innerHTML = `
+                <div class="form-group" style="margin-bottom:10px;"><label>Nombre de Línea</label><input type="text" id="m-r-nom" value="${r.nombre}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Origen</label><input type="text" id="m-r-ori" value="${r.origen}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Destino</label><input type="text" id="m-r-des" value="${r.destino}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Minutos de Espera en Bahía</label><input type="number" id="m-r-min" value="${r.tiempo_espera}"></div>
+                <div class="form-group"><label>Estado</label>
+                    <select id="m-r-est">
+                        <option value="Activa" ${r.estado==='Activa'?'selected':''}>Activa</option>
+                        <option value="Suspendida" ${r.estado==='Suspendida'?'selected':''}>Suspendida</option>
+                    </select>
+                </div>
+            `;
+            document.getElementById('btn-guardar-modal').onclick = async () => {
+                await fetch(`/api/rutas/${r.id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        nombre: document.getElementById('m-r-nom').value,
+                        origen: document.getElementById('m-r-ori').value,
+                        destino: document.getElementById('m-r-des').value,
+                        tiempo_espera: document.getElementById('m-r-min').value,
+                        estado: document.getElementById('m-r-est').value
+                    })
+                });
+                cerrarModal();
+                cargarRutas();
+            };
+            document.getElementById('modal-edicion').style.display = 'flex';
         }
 
         async function eliminarRuta(id) {
-            if (!confirm('¿Confirma la eliminación de esta línea?')) return;
+            if(!confirm('¿Seguro que deseas eliminar esta ruta?')) return;
             await fetch(`/api/rutas/${id}`, { method: 'DELETE' });
-            await cargarRutas();
+            cargarRutas();
         }
 
+        // ==========================================
+        // CARGA Y CRUD DE BUSES
+        // ==========================================
         async function cargarBuses() {
-            try {
-                const res = await fetch('/api/buses');
-                listaBusesGlobal = await res.json();
-                const tbody = document.getElementById('tabla-buses-body');
-                tbody.innerHTML = '';
+            const res = await fetch('/api/buses');
+            const data = await res.json();
+            const tbody = document.getElementById('tbody-buses');
+            tbody.innerHTML = '';
+            data.forEach(b => {
+                let badgeClass = 'badge-green';
+                if(b.estado === 'Taller') badgeClass = 'badge-red';
+                if(b.estado === 'En Bahía') badgeClass = 'badge-blue';
 
-                listaBusesGlobal.forEach(b => {
-                    const badgeClass = b.estado === 'Mantenimiento' ? 'badge-taller' : 'badge-ruta';
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${b.codigo}</strong></td>
-                            <td>${b.tipo}</td>
-                            <td>${b.capacidad} pax</td>
-                            <td>${b.linea}</td>
-                            <td><span class="badge ${badgeClass}">${b.estado}</span></td>
-                            <td><button class="btn-delete" onclick="eliminarBus(${b.id})">Eliminar</button></td>
-                        </tr>
-                    `;
-                });
-
-                actualizarSelectoresDeBuses();
-            } catch (err) {
-                console.error("Error al cargar buses:", err);
-            }
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${b.codigo}</strong></td>
+                    <td>${b.tipo}</td>
+                    <td>${b.capacidad} pax</td>
+                    <td><span class="badge badge-blue">${b.linea}</span></td>
+                    <td><span class="badge ${badgeClass}">${b.estado}</span></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick='abrirEditarBus(${JSON.stringify(b)})'>✏️ Reasignar / Estado</button>
+                        <button class="btn-action btn-del" onclick="eliminarBus(${b.id})">🗑️ Retirar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        async function guardarBus(e) {
-            e.preventDefault();
-            const tipoSel = document.getElementById('bus-tipo');
-            const cap = parseInt(tipoSel.options[tipoSel.selectedIndex].getAttribute('data-cap')) || 160;
-
-            const data = {
-                codigo: document.getElementById('bus-codigo').value,
-                tipo: tipoSel.value,
-                capacidad: cap,
-                linea: document.getElementById('bus-linea').value,
-                estado: document.getElementById('bus-estado').value
-            };
+        async function crearBus() {
+            const cod = document.getElementById('nb-cod').value;
+            const tip = document.getElementById('nb-tip').value;
+            const cap = document.getElementById('nb-cap').value;
+            const lin = document.getElementById('nb-lin').value;
+            if(!cod) return alert('Ingresa el código del bus');
 
             await fetch('/api/buses', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ codigo: cod, tipo: tip, capacidad: cap, linea: lin, estado: 'En Ruta' })
             });
+            document.getElementById('nb-cod').value = '';
+            cargarBuses();
+        }
 
-            document.getElementById('form-bus').reset();
-            await cargarBuses();
+        function abrirEditarBus(b) {
+            document.getElementById('modal-titulo').innerText = `Editar Unidad: ${b.codigo}`;
+            document.getElementById('modal-cuerpo').innerHTML = `
+                <div class="form-group" style="margin-bottom:10px;"><label>Código Bus</label><input type="text" id="m-b-cod" value="${b.codigo}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Tipo</label><input type="text" id="m-b-tip" value="${b.tipo}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Capacidad (pax)</label><input type="number" id="m-b-cap" value="${b.capacidad}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Línea Asignada</label>
+                    <select id="m-b-lin">
+                        <option value="Línea 12" ${b.linea==='Línea 12'?'selected':''}>Línea 12</option>
+                        <option value="Línea 1" ${b.linea==='Línea 1'?'selected':''}>Línea 1</option>
+                        <option value="Línea 7" ${b.linea==='Línea 7'?'selected':''}>Línea 7</option>
+                        <option value="Línea 13" ${b.linea==='Línea 13'?'selected':''}>Línea 13</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Estado Operativo</label>
+                    <select id="m-b-est">
+                        <option value="En Ruta" ${b.estado==='En Ruta'?'selected':''}>En Ruta</option>
+                        <option value="En Bahía" ${b.estado==='En Bahía'?'selected':''}>En Bahía</option>
+                        <option value="Taller" ${b.estado==='Taller'?'selected':''}>Taller / Mantenimiento</option>
+                        <option value="Fuera de Servicio" ${b.estado==='Fuera de Servicio'?'selected':''}>Fuera de Servicio</option>
+                    </select>
+                </div>
+            `;
+            document.getElementById('btn-guardar-modal').onclick = async () => {
+                await fetch(`/api/buses/${b.id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        codigo: document.getElementById('m-b-cod').value,
+                        tipo: document.getElementById('m-b-tip').value,
+                        capacidad: document.getElementById('m-b-cap').value,
+                        linea: document.getElementById('m-b-lin').value,
+                        estado: document.getElementById('m-b-est').value
+                    })
+                });
+                cerrarModal();
+                cargarBuses();
+            };
+            document.getElementById('modal-edicion').style.display = 'flex';
         }
 
         async function eliminarBus(id) {
-            if (!confirm('¿Retirar este bus de la flota?')) return;
+            if(!confirm('¿Retirar unidad de la flota?')) return;
             await fetch(`/api/buses/${id}`, { method: 'DELETE' });
-            await cargarBuses();
+            cargarBuses();
         }
 
+        // ==========================================
+        // CARGA Y CRUD DE ESTACIONES
+        // ==========================================
         async function cargarEstaciones() {
-            try {
-                const res = await fetch('/api/estaciones');
-                const data = await res.json();
-                const tbody = document.getElementById('tabla-estaciones-body');
-                tbody.innerHTML = '';
-
-                data.forEach(est => {
-                    const umbral = Math.round(est.capacidad * 1.50);
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${est.nombre}</strong></td>
-                            <td>${est.capacidad} pax</td>
-                            <td style="color: #e02424; font-weight: bold;">${umbral} pax</td>
-                            <td>${est.linea}</td>
-                            <td><span class="badge badge-operativa">${est.estado}</span></td>
-                            <td><button class="btn-delete" onclick="eliminarEstacion(${est.id})">Eliminar</button></td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                console.error("Error al cargar estaciones:", err);
-            }
+            const res = await fetch('/api/estaciones');
+            const data = await res.json();
+            const tbody = document.getElementById('tbody-estaciones');
+            tbody.innerHTML = '';
+            data.forEach(e => {
+                const umbral = Math.round(e.capacidad * 1.50);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${e.nombre}</strong></td>
+                    <td><span class="badge badge-blue">${e.linea}</span></td>
+                    <td>${e.capacidad} pasajeros</td>
+                    <td><span class="badge badge-red">🚨 ${umbral} pax (+50%)</span></td>
+                    <td><span class="badge ${e.estado === 'Operativa' ? 'badge-green' : 'badge-amber'}">${e.estado}</span></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick='abrirEditarEstacion(${JSON.stringify(e)})'>✏️ Ajustar Aforo</button>
+                        <button class="btn-action btn-del" onclick="eliminarEstacion(${e.id})">🗑️ Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        async function guardarEstacion(e) {
-            e.preventDefault();
-            const data = {
-                nombre: document.getElementById('est-nombre').value,
-                capacidad: parseInt(document.getElementById('est-capacidad').value),
-                linea: document.getElementById('est-linea').value,
-                estado: 'Operativa'
-            };
+        async function crearEstacion() {
+            const nom = document.getElementById('ne-nom').value;
+            const cap = document.getElementById('ne-cap').value;
+            const lin = document.getElementById('ne-lin').value;
+            if(!nom) return alert('Ingresa el nombre de la estación');
 
             await fetch('/api/estaciones', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre: nom, capacidad: cap, linea: lin, estado: 'Operativa' })
             });
+            document.getElementById('ne-nom').value = '';
+            cargarEstaciones();
+        }
 
-            document.getElementById('form-estacion').reset();
-            await cargarEstaciones();
+        function abrirEditarEstacion(e) {
+            document.getElementById('modal-titulo').innerText = `Editar Estación: ${e.nombre}`;
+            document.getElementById('modal-cuerpo').innerHTML = `
+                <div class="form-group" style="margin-bottom:10px;"><label>Nombre Estación</label><input type="text" id="m-e-nom" value="${e.nombre}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Capacidad Nominal (pax)</label><input type="number" id="m-e-cap" value="${e.capacidad}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Línea</label>
+                    <select id="m-e-lin">
+                        <option value="Línea 12" ${e.linea==='Línea 12'?'selected':''}>Línea 12</option>
+                        <option value="Línea 1" ${e.linea==='Línea 1'?'selected':''}>Línea 1</option>
+                        <option value="Línea 7" ${e.linea==='Línea 7'?'selected':''}>Línea 7</option>
+                        <option value="Línea 13" ${e.linea==='Línea 13'?'selected':''}>Línea 13</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Estado</label>
+                    <select id="m-e-est">
+                        <option value="Operativa" ${e.estado==='Operativa'?'selected':''}>Operativa</option>
+                        <option value="En Mantenimiento" ${e.estado==='En Mantenimiento'?'selected':''}>En Mantenimiento</option>
+                        <option value="Cerrada Temporal" ${e.estado==='Cerrada Temporal'?'selected':''}>Cerrada Temporal</option>
+                    </select>
+                </div>
+            `;
+            document.getElementById('btn-guardar-modal').onclick = async () => {
+                await fetch(`/api/estaciones/${e.id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        nombre: document.getElementById('m-e-nom').value,
+                        capacidad: document.getElementById('m-e-cap').value,
+                        linea: document.getElementById('m-e-lin').value,
+                        estado: document.getElementById('m-e-est').value
+                    })
+                });
+                cerrarModal();
+                cargarEstaciones();
+            };
+            document.getElementById('modal-edicion').style.display = 'flex';
         }
 
         async function eliminarEstacion(id) {
-            if (!confirm('¿Eliminar esta estación?')) return;
+            if(!confirm('¿Eliminar estación?')) return;
             await fetch(`/api/estaciones/${id}`, { method: 'DELETE' });
-            await cargarEstaciones();
+            cargarEstaciones();
         }
 
+        // ==========================================
+        // CARGA Y CRUD DE PILOTOS
+        // ==========================================
         async function cargarPilotos() {
-            try {
-                const res = await fetch('/api/pilotos');
-                const data = await res.json();
-                const tbody = document.getElementById('tabla-pilotos-body');
-                tbody.innerHTML = '';
-
-                data.forEach(p => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong>${p.codigo}</strong></td>
-                            <td>${p.nombre}</td>
-                            <td>${p.dpi}</td>
-                            <td><span style="font-weight: 600; color: #2563eb;">${p.unidad}</span></td>
-                            <td><span class="badge badge-activa">${p.estado}</span></td>
-                            <td><button class="btn-delete" onclick="eliminarPiloto(${p.id})">Eliminar</button></td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                console.error("Error al cargar pilotos:", err);
-            }
+            const res = await fetch('/api/pilotos');
+            const data = await res.json();
+            const tbody = document.getElementById('tbody-pilotos');
+            tbody.innerHTML = '';
+            data.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.codigo}</strong></td>
+                    <td>${p.nombre}</td>
+                    <td>${p.dpi}</td>
+                    <td><span class="badge badge-blue">${p.unidad}</span></td>
+                    <td><span class="badge ${p.estado === 'Activo' ? 'badge-green' : 'badge-amber'}">${p.estado}</span></td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick='abrirEditarPiloto(${JSON.stringify(p)})'>✏️ Reasignar / Estado</button>
+                        <button class="btn-action btn-del" onclick="eliminarPiloto(${p.id})">🗑️ Baja</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        async function guardarPiloto(e) {
-            e.preventDefault();
-            const data = {
-                codigo: document.getElementById('piloto-codigo').value,
-                nombre: document.getElementById('piloto-nombre').value,
-                dpi: document.getElementById('piloto-dpi').value,
-                unidad: document.getElementById('piloto-unidad').value,
-                estado: 'Activo'
-            };
+        async function crearPiloto() {
+            const cod = document.getElementById('np-cod').value;
+            const nom = document.getElementById('np-nom').value;
+            const dpi = document.getElementById('np-dpi').value;
+            const uni = document.getElementById('np-uni').value;
+            if(!cod || !nom) return alert('Completa código y nombre');
 
             await fetch('/api/pilotos', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ codigo: cod, nombre: nom, dpi: dpi, unidad: uni || 'Sin asignar', estado: 'Activo' })
             });
+            document.getElementById('np-cod').value = '';
+            document.getElementById('np-nom').value = '';
+            document.getElementById('np-dpi').value = '';
+            document.getElementById('np-uni').value = '';
+            cargarPilotos();
+        }
 
-            document.getElementById('form-piloto').reset();
-            await cargarPilotos();
+        function abrirEditarPiloto(p) {
+            document.getElementById('modal-titulo').innerText = `Editar Piloto: ${p.nombre}`;
+            document.getElementById('modal-cuerpo').innerHTML = `
+                <div class="form-group" style="margin-bottom:10px;"><label>Código</label><input type="text" id="m-p-cod" value="${p.codigo}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Nombre Completo</label><input type="text" id="m-p-nom" value="${p.nombre}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>DPI</label><input type="text" id="m-p-dpi" value="${p.dpi}"></div>
+                <div class="form-group" style="margin-bottom:10px;"><label>Unidad Asignada</label><input type="text" id="m-p-uni" value="${p.unidad}"></div>
+                <div class="form-group"><label>Estado</label>
+                    <select id="m-p-est">
+                        <option value="Activo" ${p.estado==='Activo'?'selected':''}>Activo</option>
+                        <option value="Suspendido" ${p.estado==='Suspendido'?'selected':''}>Suspendido</option>
+                        <option value="Vacaciones" ${p.estado==='Vacaciones'?'selected':''}>Vacaciones</option>
+                    </select>
+                </div>
+            `;
+            document.getElementById('btn-guardar-modal').onclick = async () => {
+                await fetch(`/api/pilotos/${p.id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        codigo: document.getElementById('m-p-cod').value,
+                        nombre: document.getElementById('m-p-nom').value,
+                        dpi: document.getElementById('m-p-dpi').value,
+                        unidad: document.getElementById('m-p-uni').value,
+                        estado: document.getElementById('m-p-est').value
+                    })
+                });
+                cerrarModal();
+                cargarPilotos();
+            };
+            document.getElementById('modal-edicion').style.display = 'flex';
         }
 
         async function eliminarPiloto(id) {
-            if (!confirm('¿Dar de baja a este piloto?')) return;
+            if(!confirm('¿Dar de baja a este piloto?')) return;
             await fetch(`/api/pilotos/${id}`, { method: 'DELETE' });
-            await cargarPilotos();
+            cargarPilotos();
         }
 
-        // Carga inicial sincronizada
-        window.addEventListener('DOMContentLoaded', async () => {
-            await cargarRutas();
-            await cargarBuses();
-            await cargarEstaciones();
-            await cargarPilotos();
-        });
+        // Cargar todo al inicio
+        window.onload = () => {
+            cargarRutas();
+            cargarBuses();
+            cargarEstaciones();
+            cargarPilotos();
+        };
     </script>
 </body>
 </html>
